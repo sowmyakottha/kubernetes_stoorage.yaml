@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shared-hostpath-deployment
+  labels:
+    app: hostpathdemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hostpathdemo
+  template:
+    metadata:
+      labels:
+        app: hostpathdemo
+    spec:
+      volumes:
+        - name: shared-host-dir
+          hostPath:
+            path: /tmp/k8s-hostpath-demo
+            type: DirectoryOrCreate
+
+      containers:
+        - name: writer
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - while true; do echo "$(date) from writer" >> /shared/log.txt; sleep 10; done
+          volumeMounts:
+            - name: shared-host-dir
+              mountPath: /shared
+
+        - name: reader
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - sleep 3600
+          volumeMounts:
+            - name: shared-host-dir
+              mountPath: /shared
