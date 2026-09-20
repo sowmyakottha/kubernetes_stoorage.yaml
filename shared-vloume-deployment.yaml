@@ -1,0 +1,39 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shared-volume-deployment
+  labels:
+    app: shareddemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shareddemo
+  template:
+    metadata:
+      labels:
+        app: shareddemo
+    spec:
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+
+      containers:
+        - name: writer
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - while true; do echo "$(date) Hello from writer!" >> /data/log.txt; sleep 10; done
+          volumeMounts:
+            - name: shared-data
+              mountPath: /data
+
+        - name: reader
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - sleep 3600
+          volumeMounts:
+            - name: shared-data
+              mountPath: /data
