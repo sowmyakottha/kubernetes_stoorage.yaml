@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+        - name: app-container
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args: ["while true; do echo $(date) >> /data/output.txt; sleep 10; done"]
+          volumeMounts:
+            - name: app-storage
+              mountPath: /data
+      volumes:
+        - name: app-storage
+          persistentVolumeClaim:
+            claimName: my-pvc
